@@ -1,0 +1,919 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PLV8 Documentation</title>
+    <link rel="stylesheet" href="css/site.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="one">
+        <h2>Contents</h2>
+        <div class="sidebar">
+<ul>
+<li><a href="#plv8" class="anchor">PLV8</li>
+<ul>
+<li><a href="#installing-plv8" class="anchor">Installing PLV8</li>
+<ul>
+<li><a href="#verifying-your-installation" class="anchor">Verifying Your Installation</li>
+</ul>
+<li><a href="#updating-plv8" class="anchor">Updating PLV8</li>
+<ul>
+<li><a href="#updating-older-plv8-installs" class="anchor">Updating Older PLV8 Installs</li>
+</ul>
+<li><a href="#runtime-environment-separation" class="anchor">Runtime Environment Separation</li>
+<li><a href="#start-up-procedure" class="anchor">Start-up Procedure</li>
+</ul>
+<li><a href="#building" class="anchor">Building</li>
+<ul>
+<li><a href="#building-for-macos-linux" class="anchor">Building for MacOS/Linux</li>
+<ul>
+<li><a href="#downloading-source" class="anchor">Downloading Source</li>
+<li><a href="#building" class="anchor">Building</li>
+<li><a href="#building-with-execution-timeout" class="anchor">Building with Execution Timeout</li>
+<li><a href="#building-with-icu" class="anchor">Building with ICU</li>
+<li><a href="#installing" class="anchor">Installing</li>
+<li><a href="#testing" class="anchor">Testing</li>
+</ul>
+<li><a href="#building-for-windows" class="anchor">Building for Windows</li>
+<ul>
+<li><a href="#patching-postgres" class="anchor">Patching Postgres</li>
+<li><a href="#bootstrapping" class="anchor">Bootstrapping</li>
+<li><a href="#configuring" class="anchor">Configuring</li>
+<li><a href="#compiling" class="anchor">Compiling</li>
+<li><a href="#installing" class="anchor">Installing</li>
+<li><a href="#todo" class="anchor">TODO</li>
+</ul>
+<li><a href="#runtime-configuration" class="anchor">Runtime Configuration</li>
+</ul>
+<li><a href="#function-calls" class="anchor">Function Calls</li>
+<ul>
+<li><a href="#scale-function-calls" class="anchor">Scale Function Calls</li>
+<li><a href="#set-returning-function-calls" class="anchor">Set-returning Function Calls</li>
+<li><a href="#trigger-function-calls" class="anchor">Trigger Function Calls</li>
+<li><a href="#inline-statement-calls" class="anchor">Inline Statement Calls</li>
+<li><a href="#auto-mapping-between-javascript-and-postgresql-built-in-types" class="anchor">Auto Mapping Between Javascript and PostgreSQL Built-in Types</li>
+<li><a href="#typed-array" class="anchor">Typed Array</li>
+</ul>
+<li><a href="#plv8-built-ins" class="anchor">PLV8 Built-ins</li>
+<ul>
+<li><a href="#utility-functions" class="anchor">Utility Functions</li>
+<ul>
+<li><a href="#-code-plv8-elog-code-" class="anchor"><code>plv8.elog</code></li>
+<li><a href="#-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_indent-code-" class="anchor"><code>plv8.quote_literal</code>, <code>plv8.nullable</code>, <code>plv8.quote_indent</code></li>
+<li><a href="#-code-plv8-find_function-code-" class="anchor"><code>plv8.find_function</code></li>
+<li><a href="#-code-plv8-version-code-" class="anchor"><code>plv8.version</code></li>
+</ul>
+<li><a href="#database-access-via-spi" class="anchor">Database Access via SPI</li>
+<ul>
+<li><a href="#-code-plv8-execute-code-" class="anchor"><code>plv8.execute</code></li>
+<li><a href="#-code-plv8-prepare-code-" class="anchor"><code>plv8.prepare</code></li>
+<li><a href="#-code-preparedplan-execute-code-" class="anchor"><code>PreparedPlan.execute</code></li>
+<li><a href="#-code-preparedplan-cursor-code-" class="anchor"><code>PreparedPlan.cursor</code></li>
+<li><a href="#-code-preparedplan-free-code-" class="anchor"><code>PreparedPlan.free</code></li>
+<li><a href="#-code-cursor-fetch-code-" class="anchor"><code>Cursor.fetch</code></li>
+<li><a href="#-code-cursor-move-code-" class="anchor"><code>Cursor.move</code></li>
+<li><a href="#-code-cursor-close-code-" class="anchor"><code>Cursor.close</code></li>
+<li><a href="#-code-plv8-subtransaction-code-" class="anchor"><code>plv8.subtransaction</code></li>
+</ul>
+<li><a href="#window-function-api" class="anchor">Window Function API</li>
+<ul>
+<li><a href="#-code-windowobject-get_current_position-code-" class="anchor"><code>WindowObject.get_current_position</code></li>
+<li><a href="#-code-windowobject-get_partition_row_count-code-" class="anchor"><code>WindowObject.get_partition_row_count</code></li>
+<li><a href="#-code-windowobject-set_mark_position-code-" class="anchor"><code>WindowObject.set_mark_position</code></li>
+<li><a href="#-code-windowobject-rows_are_peers-code-" class="anchor"><code>WindowObject.rows_are_peers</code></li>
+<li><a href="#-code-windowobject-get_func_arg_in_partition-code-" class="anchor"><code>WindowObject.get_func_arg_in_partition</code></li>
+<li><a href="#-code-windowobject-get_func_arg_in_frame-code-" class="anchor"><code>WindowObject.get_func_arg_in_frame</code></li>
+<li><a href="#-code-windowobject-get_func_arg_in_current-code-" class="anchor"><code>WindowObject.get_func_arg_in_current</code></li>
+<li><a href="#-code-windowobject-get_partition_local-code-" class="anchor"><code>WindowObject.get_partition_local</code></li>
+<li><a href="#-code-windowobject-set_partition_local-code-" class="anchor"><code>WindowObject.set_partition_local</code></li>
+
+        </div>
+      </div>
+      <div class="two-six">
+
+    <h1>
+      <a name="plv8" class="anchor" href="#plv8">
+        <span class="header-link"></span>
+      </a>
+      PLV8
+    </h1><p>PLV8 is a <em>trusted</em> Javascript language extension for PostgreSQL.  It can be
+used for <em>stored procedures</em>, <em>triggers</em>, etc.</p>
+<p>PLV8 works with most versions of Postgres, but works best with <code>9.1</code> and above,
+including <code>10.0</code> and <code>10.1</code>.</p>
+
+    <h2>
+      <a name="installing-plv8" class="anchor" href="#installing-plv8">
+        <span class="header-link"></span>
+      </a>
+      Installing PLV8
+    </h2><p>If the PLV8 extension has been installed to your system, the PLV8 extension can
+be installed into your PostgreSQL database by running:</p>
+<pre><code>=# CREATE EXTENSION plv8;
+</code></pre>
+    <h3>
+      <a name="verifying-your-installation" class="anchor" href="#verifying-your-installation">
+        <span class="header-link"></span>
+      </a>
+      Verifying Your Installation
+    </h3><p>You can verify the installation in two ways.  As of PLV8 <code>2.0.0</code>, you can
+execute a stored procedure:</p>
+<pre><code>=# SELECT plv8_version();
+</code></pre><p>Alternately, you can run the following on all versions of PLV8:</p>
+<pre><code>=# DO $ plv8.elog(NOTICE, plv8.version); $ LANGUAGE plv8;
+</code></pre>
+    <h2>
+      <a name="updating-plv8" class="anchor" href="#updating-plv8">
+        <span class="header-link"></span>
+      </a>
+      Updating PLV8
+    </h2><p>As of PLV8 version <code>2.3.3</code>, you can use upgrade scripts to upgrade your
+installation from any verion higher than <code>1.5.0</code>:</p>
+<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `2.3.3`;
+</code></pre><p>Note that until the database has been restarted, the old version of PLV8 will
+still be loaded, though <code>SELECT plv8_version()</code> will return the new version.
+This is an artifact of how Postgres manages extensions.</p>
+
+    <h3>
+      <a name="updating-older-plv8-installs" class="anchor" href="#updating-older-plv8-installs">
+        <span class="header-link"></span>
+      </a>
+      Updating Older PLV8 Installs
+    </h3><p>Updating PL/v8 is usually straightforward as it is a small and stable extension</p>
+<ul>
+<li>it only contains a handful of objects that need to be added to PostgreSQL
+when installing the extension.</li>
+</ul>
+<p>The procedure that is responsible for invoking this installation script
+(generated during compile time based on plv8.sql.common), is controlled by
+PostgreSQL and runs when CREATE EXTENSION is executed only. After building, it
+takes the form of plv8--<version>.sql and is usually located under
+<code>/usr/share/postgresql/&lt;PG_MAJOR&gt;/extension</code>, depending on the OS.</p>
+<p>When this command is executed, PostgreSQL tracks which objects belong to the
+extension and conversely removes them upon uninstallation, i.e., whenever
+<code>DROP EXTENSION</code> is called.</p>
+<p>You can explore some of the objects that PL/v8 stores under PostgreSQL:</p>
+<pre><code>=# SELECT lanname FROM pg_catalog.pg_language WHERE lanname = &#39;plv8&#39;;
+=# SELECT proname FROM pg_proc p WHERE p.proname LIKE &#39;plv8%&#39;;
+=# SELECT typname FROM pg_catalog.pg_type WHERE typname LIKE &#39;plv8%&#39;;
+</code></pre><p>To update PostgreSQL, you can <code>DROP</code> the existing extension:</p>
+<pre><code>=# DROP EXTENSION plv8;
+</code></pre><p>Install the new version, and <code>CREATE</code> the extension:</p>
+<pre><code>=# CREATE EXTENSION plv8;
+</code></pre><p>Alternately, you can backup and restore your database.</p>
+
+    <h2>
+      <a name="runtime-environment-separation" class="anchor" href="#runtime-environment-separation">
+        <span class="header-link"></span>
+      </a>
+      Runtime Environment Separation
+    </h2><p>In PLV8, each session has one global JS runtime context. This enables function
+invocations at low cost, and sharing common object among the functions. However,
+for the security reasons, if the user switches to another with SET ROLE command,
+a new JS runtime context is initialized and used separately. This prevents the
+risk of unexpected information leaking.</p>
+<p>Each <code>plv8</code> function is invoked as if the function is the property of other
+object. This means this in each function is a Javascript <code>object</code> that is created
+every time the function is executed in a query. In other words, the life time and
+the visibility of this object in a function is only a series of function calls in
+a query. If you need to share some value among different functions, keep it in the
+global <code>plv8</code> object because each function invocation has a different this object.</p>
+
+    <h2>
+      <a name="start-up-procedure" class="anchor" href="#start-up-procedure">
+        <span class="header-link"></span>
+      </a>
+      Start-up Procedure
+    </h2><p>PLV8 provides a start up facility, which allows you to call a <code>plv8</code> runtime
+environment initialization function specified in the GUC variable.  This can
+only be set by someone with administrator access to the database you are
+accessing.</p>
+<pre><code>SET plv8.start_proc = &#39;plv8_init&#39;;
+SELECT plv8_test(10);
+</code></pre><p>If this variable is set when the runtime is initialized, before the function
+call of <code>plv8_test()</code> another <code>plv8</code> function <code>plv8_init()</code> is invoked. In such
+initialization function, you can add any properties to <code>plv8</code> object to expose
+common values or assign them to the this property. In the initialization function,
+the receiver this is specially pointing to the global object, so the variables
+that are assigned to the this property in this initialization are visible from
+any subsequent function as global variables.</p>
+<p>Remember <code>CREATE FUNCTION</code> also starts the <code>plv8</code> runtime environment, so make
+sure to <code>SET</code> this GUC before any <code>plv8</code> actions including <code>CREATE FUNCTION</code>.</p>
+
+    <h1>
+      <a name="building" class="anchor" href="#building">
+        <span class="header-link"></span>
+      </a>
+      Building
+    </h1>
+    <h2>
+      <a name="building-for-macos-linux" class="anchor" href="#building-for-macos-linux">
+        <span class="header-link"></span>
+      </a>
+      Building for MacOS/Linux
+    </h2><p>Building PLV8 for MacOS or Linux has some specific requirements:</p>
+<ul>
+<li>Git</li>
+<li>g++ or clang++</li>
+<li>Python 2 (for v8)</li>
+</ul>
+
+    <h3>
+      <a name="downloading-source" class="anchor" href="#downloading-source">
+        <span class="header-link"></span>
+      </a>
+      Downloading Source
+    </h3><p>Downloading the source code is very straightforward:</p>
+<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.3.tar.gz
+$ tar -xvzf v2.3.3.tar.gz
+$ cd plv8-2.3.3
+$ make
+</code></pre>
+    <h3>
+      <a name="building" class="anchor" href="#building">
+        <span class="header-link"></span>
+      </a>
+      Building
+    </h3><p>Building is simple:</p>
+<pre><code>$ make
+</code></pre><p>This will download <code>v8</code> and compile it as well.  If you have a shared modern
+version of <code>v8</code> available (6.4.388.40 or above), you can compile it against a
+shared module:</p>
+<pre><code>$ make -f Makefile.shared
+</code></pre><p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, PL/v8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build PL/v8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, <code>make -f Makefile.shared</code>, and <code>make install</code>. For example in Ubuntu:</p>
+<pre><code>$ make PG_CONFIG=/usr/lib/postgresql/9.5/bin/pg_config
+</code></pre>
+    <h3>
+      <a name="building-with-execution-timeout" class="anchor" href="#building-with-execution-timeout">
+        <span class="header-link"></span>
+      </a>
+      Building with Execution Timeout
+    </h3><p>PL/v8 allows you to optionally build with an execution timeout for Javascript
+functions, when enabled at compile-time.</p>
+<pre><code>$ make -DEXECUTION_TIMEOUT
+</code></pre><p>By default, the execution timeout is not compiled, but when configured it has a
+timeout of 300 seconds (5 minutes). You can override this by setting the
+<code>plv8.execution_timeout</code> variable. It can be set between <code>1</code> second and <code>65536</code>
+seconds, but cannot be disabled.</p>
+
+    <h3>
+      <a name="building-with-icu" class="anchor" href="#building-with-icu">
+        <span class="header-link"></span>
+      </a>
+      Building with ICU
+    </h3><p>Building with ICU requires you to enable ICU in your build process:</p>
+<pre><code>$ make -DUSE_ICU
+</code></pre><p>If you build with ICU, you will need to install the correct ICU file, located in
+<code>contrib/icu</code>.</p>
+<ul>
+<li>icudtl.dat - Little Endian architectures (Intel)</li>
+<li>icudtb.dat - Big Endian architectures (Sparc)</li>
+</ul>
+<p>For ARM, you will need to figure out which Endianess your hardware and OS is
+configured for.</p>
+<p>NOTE: it is important that the user that Postgres is started with has read
+access to the file.</p>
+
+    <h3>
+      <a name="installing" class="anchor" href="#installing">
+        <span class="header-link"></span>
+      </a>
+      Installing
+    </h3><p>Once PLV8 has been built, you need to install it for PostgreSQL to be able to use
+it:</p>
+<pre><code>$ make install
+</code></pre><p>This might require <code>root</code> access, depending on how PostgreSQL is installed:</p>
+<pre><code>$ sudo make install
+</code></pre>
+    <h3>
+      <a name="testing" class="anchor" href="#testing">
+        <span class="header-link"></span>
+      </a>
+      Testing
+    </h3><p>Once PLV8 is installed, you can verify the install by running:</p>
+<pre><code>$ make installcheck
+</code></pre>
+    <h2>
+      <a name="building-for-windows" class="anchor" href="#building-for-windows">
+        <span class="header-link"></span>
+      </a>
+      Building for Windows
+    </h2><p>Building PLV8 for Windows has some specific requirements:</p>
+<ul>
+<li>Git</li>
+<li>MSVC 2013, 2015, or 2017</li>
+<li>CMake - available as part of MSVC</li>
+<li>Postgres 9.5+ (it will work in 9.3 and 9.4, but will involve extra work)</li>
+</ul>
+<p>Additional requirements to build V8:</p>
+<ul>
+<li>Python 2</li>
+<li>unzip.exe</li>
+<li>patch.exe - part of the Git install</li>
+</ul>
+
+    <h3>
+      <a name="patching-postgres" class="anchor" href="#patching-postgres">
+        <span class="header-link"></span>
+      </a>
+      Patching Postgres
+    </h3><p>Currently, Postgres requires a patch of one or more <code>include</code> files in order to
+compile PLV8.</p>
+<p>First, find the directory that contains the <code>include</code> files.  This will typically
+be inside something like <code>C:\Program Files\PostgreSQL\10\include</code>, where the <code>10</code>
+is your version number.  Inside of the <code>include</code> directory:</p>
+<pre><code>PS&gt; cd server\port\atomics
+PS&gt; copy \plv8\windows\generic-msvc.h.patch .
+PS&gt; patch &lt; generic-msvc.h.patch
+</code></pre>
+    <h3>
+      <a name="bootstrapping" class="anchor" href="#bootstrapping">
+        <span class="header-link"></span>
+      </a>
+      Bootstrapping
+    </h3><p>Bootstrapping will the build environment, download, and compile <code>v8</code>.  Watch for
+any errors:</p>
+<pre><code>PS&gt; bootstrap.bat
+</code></pre>
+    <h3>
+      <a name="configuring" class="anchor" href="#configuring">
+        <span class="header-link"></span>
+      </a>
+      Configuring
+    </h3><p>Once <code>v8</code> has been built, you can configure your build environment.  This involves
+specifying the path to your Postgres install, the version of Postgres you are
+running, as well as the build target.  Build targets will typically be one of the
+following:</p>
+<ul>
+<li><code>Visual Studio 15 2017</code> - 32 bit, MSVC 2017</li>
+<li><code>Visual Studio 15 2017 Win64</code> - 64 bit, MSVC 2017</li>
+<li><code>Visual Studio 14 2015</code> - 32 bit, MSVC 2015</li>
+<li><code>Visual Studio 14 2015 Win64</code> - 64 bit, MSVC 2015</li>
+<li><code>Visual Studio 12 2013</code> - 32 bit, MSVC 2013</li>
+<li><code>Visual Studio 12 2013 Win64</code> - 64 bit, MSVC 2013</li>
+</ul>
+<pre><code>PS&gt; cmake . -G &quot;Visual Studio 15 2017 Win64&quot; -DCMAKE_INSTALL_PREFIX=&quot;C:\Program Files\PostgreSQL\10&quot; -DPOSTGRESQL_VERSION=10
+</code></pre>
+    <h3>
+      <a name="compiling" class="anchor" href="#compiling">
+        <span class="header-link"></span>
+      </a>
+      Compiling
+    </h3><p>After successfully configuring your build environment, compiling should be easy:</p>
+<pre><code>PS&gt; cmake --build . --config Release --target Package
+</code></pre><p>This will build and package the extension for installation.</p>
+
+    <h3>
+      <a name="installing" class="anchor" href="#installing">
+        <span class="header-link"></span>
+      </a>
+      Installing
+    </h3><p>To install, you simply need to <code>unzip</code> the file created.  The name will depend
+on the version of PLV8 and the version of Postgres.  An example is
+<code>plv8-2.3.1-postgresql-10-x64.zip</code>.</p>
+
+    <h3>
+      <a name="todo" class="anchor" href="#todo">
+        <span class="header-link"></span>
+      </a>
+      TODO
+    </h3><ul>
+<li>Generate configuration files</li>
+<li>Generate control files</li>
+<li>Generate sql files</li>
+</ul>
+
+    <h1>
+      <a name="runtime-configuration" class="anchor" href="#runtime-configuration">
+        <span class="header-link"></span>
+      </a>
+      Runtime Configuration
+    </h1><p>PLV8 has some configuration variables that can be set either in <code>postgresql.conf</code>
+or at runtime using <code>SET</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>plv8.start_proc</code></td>
+<td>PLV8 function to run once when PLV8 is first used</td>
+<td><em>none</em></td>
+</tr>
+<tr>
+<td><code>plv8.icu_data</code></td>
+<td>ICU data file directory (when compiled with ICU support)</td>
+<td><em>none</em></td>
+</tr>
+<tr>
+<td><code>plv8.v8_flags</code></td>
+<td>V8 engine initialization flags (e.g. --harmony for all current harmony features)</td>
+<td><em>none</em></td>
+</tr>
+<tr>
+<td><code>plv8.execution_timeout</code></td>
+<td>V8 execution timeout (when compiled with EXECUTION_TIMEOUT)</td>
+<td>300 seconds</td>
+</tr>
+</tbody>
+</table>
+
+    <h1>
+      <a name="function-calls" class="anchor" href="#function-calls">
+        <span class="header-link"></span>
+      </a>
+      Function Calls
+    </h1><p>PLV8 has the ability to execute multiple types of function calls inside of
+PostgreSQL.</p>
+
+    <h2>
+      <a name="scale-function-calls" class="anchor" href="#scale-function-calls">
+        <span class="header-link"></span>
+      </a>
+      Scale Function Calls
+    </h2><p>In PLV8, you can write your invoked function call in Javascript, using the usual
+<code>CREATE FUNCTION</code> statement.  Here is an example of a <code>scalar</code> function call:</p>
+<pre><code>CREATE FUNCTION plv8_test(keys TEXT[], vals TEXT[]) RETURNS JSON AS $
+    var o = {};
+    for(var i=0; i&lt;keys.length; i++){
+        o[keys[i]] = vals[i];
+    }
+    return o;
+$ LANGUAGE plv8 IMMUTABLE STRICT;
+
+=# SELECT plv8_test(ARRAY[&#39;name&#39;, &#39;age&#39;], ARRAY[&#39;Tom&#39;, &#39;29&#39;]);
+
+plv8_test
+---------------------------
+{&quot;name&quot;:&quot;Tom&quot;,&quot;age&quot;:&quot;29&quot;}
+(1 row)
+</code></pre><p>Internally, the function will defined such as:</p>
+<pre><code>(function(keys, vals) {
+  var o = {};
+  for(var i=0; i&lt;keys.length; i++){
+      o[keys[i]] = vals[i];
+  }
+  return o;
+})
+</code></pre><p>Where <code>keys</code> and <code>vals</code> are type checked and validated inside of PostgreSQL,
+called as arguments to the function, and <code>o</code> is the object that is returned as
+the <code>JSON</code> type back to PostgreSQL.  If argument names are omitted in the creation
+of the function, they will be available in the function as <code>$1</code>, <code>$2</code>, etc.</p>
+
+    <h2>
+      <a name="set-returning-function-calls" class="anchor" href="#set-returning-function-calls">
+        <span class="header-link"></span>
+      </a>
+      Set-returning Function Calls
+    </h2><p>PLV8 supports returning <code>SET</code> from function calls:</p>
+<pre><code>CREATE TYPE rec AS (i integer, t text);
+CREATE FUNCTION set_of_records() RETURNS SETOF rec AS
+$
+    // plv8.return_next() stores records in an internal tuplestore,
+    // and return all of them at the end of function.
+    plv8.return_next( { &quot;i&quot;: 1, &quot;t&quot;: &quot;a&quot; } );
+    plv8.return_next( { &quot;i&quot;: 2, &quot;t&quot;: &quot;b&quot; } );
+
+    // You can also return records with an array of JSON.
+    return [ { &quot;i&quot;: 3, &quot;t&quot;: &quot;c&quot; }, { &quot;i&quot;: 4, &quot;t&quot;: &quot;d&quot; } ];
+$
+LANGUAGE plv8;
+</code></pre><p>Running this gives you a <code>SETOF</code> result:</p>
+<pre><code>=# SELECT * FROM set_of_records();
+
+i | t
+---+---
+1 | a
+2 | b
+3 | c
+4 | d
+(4 rows)
+</code></pre><p>Internally, if the function is declared as <code>RETURNS SETOF</code>, PLV8 prepares a
+<code>tuplestore</code> every time every time it is called.  You can call the
+<code>plv8.return_next()</code> function as many times as you need to return a row.  In
+addition, you can also return an <code>array</code> to add a set of records.</p>
+<p>If the argument object to <code>return_next()</code> has extra properties that are not
+defined by the argument, <code>return_next()</code> raises an error.</p>
+
+    <h2>
+      <a name="trigger-function-calls" class="anchor" href="#trigger-function-calls">
+        <span class="header-link"></span>
+      </a>
+      Trigger Function Calls
+    </h2><p>PLV8 supports trigger function calls:</p>
+<pre><code>CREATE FUNCTION test_trigger() RETURNS TRIGGER AS
+$
+    plv8.elog(NOTICE, &quot;NEW = &quot;, JSON.stringify(NEW));
+    plv8.elog(NOTICE, &quot;OLD = &quot;, JSON.stringify(OLD));
+    plv8.elog(NOTICE, &quot;TG_OP = &quot;, TG_OP);
+    plv8.elog(NOTICE, &quot;TG_ARGV = &quot;, TG_ARGV);
+    if (TG_OP == &quot;UPDATE&quot;) {
+        NEW.i = 102;
+        return NEW;
+    }
+$
+LANGUAGE &quot;plv8&quot;;
+
+CREATE TRIGGER test_trigger
+    BEFORE INSERT OR UPDATE OR DELETE
+    ON test_tbl FOR EACH ROW
+    EXECUTE PROCEDURE test_trigger(&#39;foo&#39;, &#39;bar&#39;);
+</code></pre><p>If the trigger type is an <code>INSERT</code> or <code>UPDATE</code>, you can assign properties of
+<code>NEW</code> variable to change the actual tuple stored by this operation.  A PLV8
+trigger function will have the following special arguments that contain the
+trigger state:</p>
+<ul>
+<li><code>NEW</code></li>
+<li><code>OLD</code></li>
+<li><code>TG_NAME</code></li>
+<li><code>TG_WHEN</code></li>
+<li><code>TG_LEVEL</code></li>
+<li><code>TG_OP</code></li>
+<li><code>TG_RELID</code></li>
+<li><code>TG_TABLE_NAME</code></li>
+<li><code>TG_TABLE_SCHEMA</code></li>
+<li><code>TG_ARGV</code></li>
+</ul>
+<p>For more information see the <a href="https://www.postgresql.org/docs/current/static/plpgsql-trigger.html">trigger section in PostgreSQL manual</a>.</p>
+
+    <h2>
+      <a name="inline-statement-calls" class="anchor" href="#inline-statement-calls">
+        <span class="header-link"></span>
+      </a>
+      Inline Statement Calls
+    </h2><p>PLV8 supports the <code>DO</code> block when using PostgreSQL 9.0 and above:</p>
+<pre><code>DO $ plv8.elog(NOTICE, &#39;this&#39;, &#39;is&#39;, &#39;inline&#39;, &#39;code&#39;); $ LANGUAGE plv8;
+</code></pre>
+    <h2>
+      <a name="auto-mapping-between-javascript-and-postgresql-built-in-types" class="anchor" href="#auto-mapping-between-javascript-and-postgresql-built-in-types">
+        <span class="header-link"></span>
+      </a>
+      Auto Mapping Between Javascript and PostgreSQL Built-in Types
+    </h2><p>For the result and arguments, PostgreSQL types and Javascript types are mapped
+automatically, if the desired PostgreSQL type is one of:</p>
+<ul>
+<li><code>OID</code></li>
+<li><code>bool</code></li>
+<li><code>INT3</code></li>
+<li><code>INT4</code></li>
+<li><code>INT8</code></li>
+<li><code>FLOAT4</code></li>
+<li><code>FLOAT8</code></li>
+<li><code>NUMERIC</code></li>
+<li><code>DATE</code></li>
+<li><code>TIMESTAMP</code></li>
+<li><code>TIMESTAMPTZ</code></li>
+<li><code>BYTEA</code></li>
+<li><code>JSON</code> (&gt;= 9.2)</li>
+<li><code>JSONB</code> (&gt;= 9.4)</li>
+</ul>
+<p>and the Javascript value looks compatible, then the conversion succeeds.
+Otherwise, PLV8 tries to convert them via the <code>cstring</code> representation. An
+<code>array</code> type is supported only if the dimension is one. A Javascript <code>object</code>
+will be mapped to a <code>tuple</code> when applicable. In addition to these types, PLV8
+supports polymorphic types such like <code>ANYELEMENT</code> and <code>ANYARRAY</code>. Conversion of
+<code>BYTEA</code> is a little different story. See the <a href="#Typed%20Array">TypedArray section</a>.</p>
+
+    <h2>
+      <a name="typed-array" class="anchor" href="#typed-array">
+        <span class="header-link"></span>
+      </a>
+      Typed Array
+    </h2><p>The <code>typed array</code> is something <code>v8</code> provides to allow fast access to native
+memory, mainly for the purpose of their canvas support in browsers. PLV8 uses
+this to map <code>BYTEA</code> and various array types to a Javascript <code>array</code>. In the case
+of <code>BYTEA</code>, you can access each byte as an array of unsigned bytes. For
+<code>int2</code>/<code>int4</code>/<code>float4</code>/<code>float8</code> array types, PLV8 provides direct access to each
+element by using PLV8 domain types.</p>
+<ul>
+<li><code>plv8_int2array</code> maps <code>int2[]</code></li>
+<li><code>plv8_int4array</code> maps <code>int4[]</code></li>
+<li><code>plv8_float4array</code> maps <code>float4[]</code></li>
+<li><code>plv8_float8array</code> maps <code>float8[]</code></li>
+</ul>
+<p>These are only annotations that tell PLV8 to use the fast access method instead
+of the regular one. For these typed arrays, only 1-dimensional arrays without
+any <code>NULL</code> elements.  There is currently no way to create such typed array inside
+PLV8 functions, only arguments can be typed array. You can modify the element and
+return the value. An example for these types are as follows:</p>
+<pre><code>CREATE FUNCTION int4sum(ary plv8_int4array) RETURNS int8 AS $
+  var sum = 0;
+  for (var i = 0; i &lt; ary.length; i++) {
+    sum += ary[i];
+  }
+  return sum;
+$ LANGUAGE plv8 IMMUTABLE STRICT;
+
+SELECT int4sum(ARRAY[1, 2, 3, 4, 5]);
+
+ int4sum
+---------
+      15
+(1 row)
+</code></pre>
+    <h1>
+      <a name="plv8-built-ins" class="anchor" href="#plv8-built-ins">
+        <span class="header-link"></span>
+      </a>
+      PLV8 Built-ins
+    </h1><p>PLV8 includes a number of built-in functions bound to the <code>plv8</code> object for you
+to use.</p>
+
+    <h2>
+      <a name="utility-functions" class="anchor" href="#utility-functions">
+        <span class="header-link"></span>
+      </a>
+      Utility Functions
+    </h2>
+    <h3>
+      <a name="-code-plv8-elog-code-" class="anchor" href="#-code-plv8-elog-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.elog</code>
+    </h3><p><code>plv8.elog</code> emits a message to the client or the PostgreSQL log file.  The
+emit level is one of:</p>
+<ul>
+<li><code>DEBUG5</code></li>
+<li><code>DEBUG4</code></li>
+<li><code>DEBUG3</code></li>
+<li><code>DEBUG2</code></li>
+<li><code>DEBUG1</code></li>
+<li><code>LOG</code></li>
+<li><code>INFO</code></li>
+<li><code>NOTICE</code></li>
+<li><code>WARNING</code></li>
+<li><code>ERROR</code></li>
+</ul>
+<pre><code>var msg = &#39;world&#39;;
+
+plv8.elog(DEBUG1, &#39;Hello&#39;, `${msg}!`);
+</code></pre><p>See the <a href="https://www.postgresql.org/docs/current/static/runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS">PostgreSQL manual</a> for information on each error level.</p>
+
+    <h3>
+      <a name="-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_indent-code-" class="anchor" href="#-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_indent-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.quote_literal</code>, <code>plv8.nullable</code>, <code>plv8.quote_indent</code>
+    </h3><p>Each function for the quote family is identical to the built-in SQL function
+with the same name.</p>
+
+    <h3>
+      <a name="-code-plv8-find_function-code-" class="anchor" href="#-code-plv8-find_function-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.find_function</code>
+    </h3><p>PLV8 provides a function to access other functions defined as <code>plv8</code> functions
+that have been registered in the database.</p>
+<pre><code>CREATE FUNCTION callee(a int) RETURNS int AS $ return a * a $ LANGUAGE plv8;
+CREATE FUNCTION caller(a int, t int) RETURNS int AS $
+  var func = plv8.find_function(&quot;callee&quot;);
+  return func(a);
+$ LANGUAGE plv8;
+</code></pre><p>With <code>plv8.find_function()`</code>, you can look up other PLV8 functions. If they
+are not a PLV8 function, and error is thrown. The function signature parameter
+to <code>plv8.find_function()`</code> is either of <code>regproc</code> (function name only) or
+<code>regprocedure</code> (function name with argument types). You can make use of the
+internal type for arguments and void type for return type for the pure Javascript
+function to make sure any invocation from SQL statements should not occur.</p>
+
+    <h3>
+      <a name="-code-plv8-version-code-" class="anchor" href="#-code-plv8-version-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.version</code>
+    </h3><p>The <code>plv8</code> object provides a version string as <code>plv8.version</code>.  This string
+corresponds to the <code>plv8</code> module version.</p>
+
+    <h2>
+      <a name="database-access-via-spi" class="anchor" href="#database-access-via-spi">
+        <span class="header-link"></span>
+      </a>
+      Database Access via SPI
+    </h2><p>PLV8 provides functions for database access, including prepared statements,
+and cursors.</p>
+
+    <h3>
+      <a name="-code-plv8-execute-code-" class="anchor" href="#-code-plv8-execute-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.execute</code>
+    </h3><p><code>plv8.execute(sql [, args])</code></p>
+<p>Executes SQL statements and retrieves the results.  The <code>sql</code> argument is
+required, and the <code>args</code> argument is an optional <code>array</code> containing any arguments
+passed in the SQL query.  For <code>SELECT</code> queries, the returned value is an <code>array</code>
+of <code>objects</code>.  Each <code>object</code> represents one row, with the <code>object</code> properties
+mapped as column names.  For non-<code>SELECT</code> queries, the return result is the
+number of rows affected.</p>
+<pre><code>var json_result = plv8.execute(&#39;SELECT * FROM tbl&#39;);
+var num_affected = plv8.execute(&#39;DELETE FROM tbl WHERE price &gt; $1&#39;, [ 1000 ]);
+</code></pre>
+    <h3>
+      <a name="-code-plv8-prepare-code-" class="anchor" href="#-code-plv8-prepare-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.prepare</code>
+    </h3><p><code>plv8.prepare(sql [, typenames])</code></p>
+<p>Opens or creates a prepared statement.  The <code>typename</code> parameter is an <code>array</code>
+where each element is a <code>string</code> that corresponds to the PostgreSQL type name
+for each <code>bind</code> parameter.  Returned value is an object of the <code>PreparedPlan</code> type.
+This object must be freed by <code>plan.free()</code> before leaving the function.</p>
+<pre><code>var plan = plv8.prepare(&#39;SELECT * FROM tbl WHERE col = $1&#39;, [ &#39;int&#39; ]);
+var rows = plan.execute([ 1 ]);
+var sum = 0;
+for (var i = 0; i &lt; rows.length; i++) {
+  sum += rows[i].num;
+}
+plan.free();
+
+return sum;
+</code></pre>
+    <h3>
+      <a name="-code-preparedplan-execute-code-" class="anchor" href="#-code-preparedplan-execute-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>PreparedPlan.execute</code>
+    </h3><p><code>PreparedPlan.execute([ args ])</code></p>
+<p>Executes the prepared statement.  The <code>args</code> parameter is the same as what would be
+required for <code>plv8.execute()</code>, and can be omitted if the statement does not have
+any parameters.  The result of this method is also the same as <code>plv8.execute()</code>.</p>
+
+    <h3>
+      <a name="-code-preparedplan-cursor-code-" class="anchor" href="#-code-preparedplan-cursor-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>PreparedPlan.cursor</code>
+    </h3><p><code>PreparedPlan.cursor([ args ])</code></p>
+<p>Opens a cursor form the prepared statement.  The <code>args</code> parameter is the same as
+what would be required for <code>plv8.execute()</code> and <code>PreparedPlan.execute()</code>.  The
+returned object is of type <code>Cursor</code>.  This must be closed by <code>Cursor.close()</code>
+before leaving the function.</p>
+<pre><code>var plan = plv8.prepare(&#39;SELECT * FROM tbl WHERE col = $1&#39;, [ &#39;int&#39; ]);
+var cursor = plan.cursor([ 1 ]);
+var sum = 0, row;
+while (row = cursor.fetch()) {
+    sum += row.num;
+}
+cursor.close();
+plan.free();
+
+return sum;
+</code></pre>
+    <h3>
+      <a name="-code-preparedplan-free-code-" class="anchor" href="#-code-preparedplan-free-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>PreparedPlan.free</code>
+    </h3><p>Frees the prepared statement.</p>
+
+    <h3>
+      <a name="-code-cursor-fetch-code-" class="anchor" href="#-code-cursor-fetch-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>Cursor.fetch</code>
+    </h3><p><code>Cursor.fetch([ nrows ])</code></p>
+<p>When the <code>nrows</code> parameter is omitted, fetches a row from the cursor and returns
+it as an <code>object</code> (note: not as an <code>array</code>).  If specified, fetches as many rows
+as the <code>nrows</code> parameter, up to the number of rows available, and returns an
+<code>array</code> of <code>objects</code>.  A negative value will fetch backward.</p>
+
+    <h3>
+      <a name="-code-cursor-move-code-" class="anchor" href="#-code-cursor-move-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>Cursor.move</code>
+    </h3><p><code>Cursor.move(nrows)</code></p>
+<p>Moves the cursor <code>nrows</code>.  A negative value will move backward.</p>
+
+    <h3>
+      <a name="-code-cursor-close-code-" class="anchor" href="#-code-cursor-close-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>Cursor.close</code>
+    </h3><p>Closes the <code>Cursor</code>.</p>
+
+    <h3>
+      <a name="-code-plv8-subtransaction-code-" class="anchor" href="#-code-plv8-subtransaction-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>plv8.subtransaction</code>
+    </h3><p><code>plv8.subtransaction(func)</code></p>
+<p><code>plv8.execute()</code> creates a subtransaction each time it executes.  If you need
+an atomic operation, you will need to call <code>plv8.subtransaction()</code> to create
+a subtransaction block.</p>
+<pre><code>try{
+  plv8.subtransaction(function(){
+    plv8.execute(&quot;INSERT INTO tbl VALUES(1)&quot;); // should be rolled back!
+    plv8.execute(&quot;INSERT INTO tbl VALUES(1/0)&quot;); // occurs an exception
+  });
+} catch(e) {
+  ... execute fall back plan ...
+}
+</code></pre><p>If one of the SQL execution in the subtransaction block fails, all of operations
+within the block are rolled back. If the process in the block throws a Javascript
+exception, it is carried forward. So use a <code>try ... catch</code> block to capture it and
+do alternative operations if it occurs.</p>
+
+    <h2>
+      <a name="window-function-api" class="anchor" href="#window-function-api">
+        <span class="header-link"></span>
+      </a>
+      Window Function API
+    </h2><p>You can define user-defined window functions with PLV8. It wraps the C-level
+window function API to support full functionality. To create one, first obtain a
+window object by calling <code>plv8.get_window_object()</code>, which provides the following
+interfaces:</p>
+
+    <h3>
+      <a name="-code-windowobject-get_current_position-code-" class="anchor" href="#-code-windowobject-get_current_position-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.get_current_position</code>
+    </h3><p>Returns the current position in the partition, starting from <code>0</code>.</p>
+
+    <h3>
+      <a name="-code-windowobject-get_partition_row_count-code-" class="anchor" href="#-code-windowobject-get_partition_row_count-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.get_partition_row_count</code>
+    </h3><p>Returns the number of rows in the partition.</p>
+
+    <h3>
+      <a name="-code-windowobject-set_mark_position-code-" class="anchor" href="#-code-windowobject-set_mark_position-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.set_mark_position</code>
+    </h3><p><code>WindowObject.set_mark_position(pos)</code></p>
+<p>Sets the mark at the specified row.  Rows above this position will be gone and
+no longer accessible later.</p>
+
+    <h3>
+      <a name="-code-windowobject-rows_are_peers-code-" class="anchor" href="#-code-windowobject-rows_are_peers-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.rows_are_peers</code>
+    </h3><p><code>WindowObject.rows_are_peers(pos1, pos1)</code></p>
+<p>Returns <code>true</code> if the rows at <code>pos1</code> and <code>pos2</code> are peers.</p>
+
+    <h3>
+      <a name="-code-windowobject-get_func_arg_in_partition-code-" class="anchor" href="#-code-windowobject-get_func_arg_in_partition-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.get_func_arg_in_partition</code>
+    </h3><p><code>WindowObject.get_func_arg_in_partition(argno, relpos, seektype, mark_pos)</code></p>
+
+    <h3>
+      <a name="-code-windowobject-get_func_arg_in_frame-code-" class="anchor" href="#-code-windowobject-get_func_arg_in_frame-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.get_func_arg_in_frame</code>
+    </h3><p><code>WindowObject.get_func_arg_in_frame(argno, relpos, seektype, mark_pos)</code></p>
+<p>Returns the value of the argument in <code>argno</code> (starting from 0) to this function
+at the <code>relpos</code> row from <code>seektype</code> in the current partition or frame.
+<code>seektype</code> can be either of <code>WindowObject.SEEK_HEAD</code>, <code>WindowObject.SEEK_CURRENT</code>,
+or <code>WindowObject.SEEK_TAIL</code>. If <code>mark_pos</code> is <code>true</code>, the row the argument is
+fetched from is marked. If the specified row is out of the partition/frame, the
+returned value will be undefined.</p>
+
+    <h3>
+      <a name="-code-windowobject-get_func_arg_in_current-code-" class="anchor" href="#-code-windowobject-get_func_arg_in_current-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.get_func_arg_in_current</code>
+    </h3><p><code>WindowObject.get_func_arg_in_current(argno)</code></p>
+<p>Returns the value of the argument in <code>argno</code> (starting from 0) to this function
+at the current row. Note that the returned value will be the same as the argument
+variable of the function.</p>
+
+    <h3>
+      <a name="-code-windowobject-get_partition_local-code-" class="anchor" href="#-code-windowobject-get_partition_local-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.get_partition_local</code>
+    </h3><p><code>WindowObject.get_partition_local([ size ])</code></p>
+<p>Returns partition-local value, which is released at the end of the current
+partition. If nothing is stored, undefined is returned. size argument (default
+1000) is the byte size of the allocated memory in the first call. Once the memory
+is allocated, the size will not change.</p>
+
+    <h3>
+      <a name="-code-windowobject-set_partition_local-code-" class="anchor" href="#-code-windowobject-set_partition_local-code-">
+        <span class="header-link"></span>
+      </a>
+      <code>WindowObject.set_partition_local</code>
+    </h3><p><code>WindowObject.set_partition_local(obj)</code></p>
+<p>Stores the partition-local value, which you can retrieve later with
+<code>get_partition_local()`</code>. This function internally uses <code>JSON.stringify()</code> to\
+serialize the object, so if you pass a value that is not able to be serialized
+it may end up being an unexpected value. If the size of a serialized value is
+more than the allocated memory, it will throw an exception.</p>
+<p>You can also learn more on how to use these API in the <code>sql/window.sql</code>
+regression test, which implements most of the native window functions. For
+general information on the user-defined window function, see the <a href="https://www.postgresql.org/docs/current/static/sql-createfunction.html">CREATE FUNCTION page of the PostgreSQL manual</a>.</p>
+
+      </div>
+    </div>
+  </body>
+</html>
