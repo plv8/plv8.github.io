@@ -215,6 +215,7 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
 <li>Git</li>
 <li>g++ or clang++</li>
 <li>Python 2 (for v8)</li>
+<li>pgk-config (linux only for v8)</li>
 </ul>
 
     <h3>
@@ -239,7 +240,7 @@ $ make
 version of <code>v8</code> available (6.4.388.40 or above), you can compile it against a
 shared module:</p>
 <pre><code>$ make -f Makefile.shared
-</code></pre><p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, PL/v8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build PL/v8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, <code>make -f Makefile.shared</code>, and <code>make install</code>. For example in Ubuntu:</p>
+</code></pre><p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, Plv8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build Plv8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, <code>make -f Makefile.shared</code>, and <code>make install</code>. For example in Ubuntu:</p>
 <pre><code>$ make PG_CONFIG=/usr/lib/postgresql/9.5/bin/pg_config
 </code></pre>
     <h3>
@@ -247,7 +248,7 @@ shared module:</p>
         <span class="header-link"></span>
       </a>
       Building with Execution Timeout
-    </h3><p>PL/v8 allows you to optionally build with an execution timeout for Javascript
+    </h3><p>Plv8 allows you to optionally build with an execution timeout for Javascript
 functions, when enabled at compile-time.</p>
 <pre><code>$ make EXECUTION_TIMEOUT=1
 </code></pre><p>By default, the execution timeout is not compiled, but when configured it has a
