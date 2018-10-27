@@ -138,7 +138,7 @@ This is an artifact of how Postgres manages extensions.</p>
         <span class="header-link"></span>
       </a>
       Updating Older PLV8 Installs
-    </h3><p>Updating PL/v8 is usually straightforward as it is a small and stable extension</p>
+    </h3><p>Updating PLV8 is usually straightforward as it is a small and stable extension</p>
 <ul>
 <li>it only contains a handful of objects that need to be added to PostgreSQL
 when installing the extension.</li>
@@ -151,7 +151,7 @@ takes the form of plv8--<version>.sql and is usually located under
 <p>When this command is executed, PostgreSQL tracks which objects belong to the
 extension and conversely removes them upon uninstallation, i.e., whenever
 <code>DROP EXTENSION</code> is called.</p>
-<p>You can explore some of the objects that PL/v8 stores under PostgreSQL:</p>
+<p>You can explore some of the objects that PLV8 stores under PostgreSQL:</p>
 <pre><code>=# SELECT lanname FROM pg_catalog.pg_language WHERE lanname = &#39;plv8&#39;;
 =# SELECT proname FROM pg_proc p WHERE p.proname LIKE &#39;plv8%&#39;;
 =# SELECT typname FROM pg_catalog.pg_type WHERE typname LIKE &#39;plv8%&#39;;
@@ -168,7 +168,7 @@ extension and conversely removes them upon uninstallation, i.e., whenever
       Runtime Environment Separation
     </h2><p>In PLV8, each session has one global JS runtime context. This enables function
 invocations at low cost, and sharing common object among the functions. However,
-for the security reasons, if the user switches to another with SET ROLE command,
+for security reasons, if the user switches to another with SET ROLE command,
 a new JS runtime context is initialized and used separately. This prevents the
 risk of unexpected information leaking.</p>
 <p>Each <code>plv8</code> function is invoked as if the function is the property of other
@@ -183,18 +183,18 @@ global <code>plv8</code> object because each function invocation has a different
         <span class="header-link"></span>
       </a>
       Start-up Procedure
-    </h2><p>PLV8 provides a start up facility, which allows you to call a <code>plv8</code> runtime
+    </h2><p>PLV8 provides a start-up facility, which allows you to call a <code>plv8</code> runtime
 environment initialization function specified in the GUC variable.  This can
 only be set by someone with administrator access to the database you are
 accessing.</p>
 <pre><code>SET plv8.start_proc = &#39;plv8_init&#39;;
 SELECT plv8_test(10);
-</code></pre><p>If this variable is set when the runtime is initialized, before the function
-call of <code>plv8_test()</code> another <code>plv8</code> function <code>plv8_init()</code> is invoked. In such
-initialization function, you can add any properties to <code>plv8</code> object to expose
+</code></pre><p>If this variable is set when the runtime is initialized, before
+<code>plv8_test()</code> runs another <code>plv8</code> function <code>plv8_init()</code> is invoked. In such
+an initialization function, you can add any properties to the <code>plv8</code> object to expose
 common values or assign them to the this property. In the initialization function,
 the receiver this is specially pointing to the global object, so the variables
-that are assigned to the this property in this initialization are visible from
+that are assigned to this property in this initialization are visible from
 any subsequent function as global variables.</p>
 <p>Remember <code>CREATE FUNCTION</code> also starts the <code>plv8</code> runtime environment, so make
 sure to <code>SET</code> this GUC before any <code>plv8</code> actions including <code>CREATE FUNCTION</code>.</p>
@@ -240,7 +240,7 @@ $ make
 version of <code>v8</code> available (6.4.388.40 or above), you can compile it against a
 shared module:</p>
 <pre><code>$ make -f Makefile.shared
-</code></pre><p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, Plv8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build Plv8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, <code>make -f Makefile.shared</code>, and <code>make install</code>. For example in Ubuntu:</p>
+</code></pre><p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, PLV8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build PLV8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, <code>make -f Makefile.shared</code>, and <code>make install</code>. For example in Ubuntu:</p>
 <pre><code>$ make PG_CONFIG=/usr/lib/postgresql/9.5/bin/pg_config
 </code></pre>
     <h3>
@@ -248,7 +248,7 @@ shared module:</p>
         <span class="header-link"></span>
       </a>
       Building with Execution Timeout
-    </h3><p>Plv8 allows you to optionally build with an execution timeout for Javascript
+    </h3><p>PLV8 allows you to optionally build with an execution timeout for Javascript
 functions, when enabled at compile-time.</p>
 <pre><code>$ make EXECUTION_TIMEOUT=1
 </code></pre><p>By default, the execution timeout is not compiled, but when configured it has a
@@ -554,7 +554,7 @@ trigger state:</p>
       </a>
       Auto Mapping Between Javascript and PostgreSQL Built-in Types
     </h2><p>For the result and arguments, PostgreSQL types and Javascript types are mapped
-automatically, if the desired PostgreSQL type is one of:</p>
+automatically; if the desired PostgreSQL type is one of:</p>
 <ul>
 <li><code>OID</code></li>
 <li><code>bool</code></li>
@@ -597,8 +597,8 @@ element by using PLV8 domain types.</p>
 </ul>
 <p>These are only annotations that tell PLV8 to use the fast access method instead
 of the regular one. For these typed arrays, only 1-dimensional arrays without
-any <code>NULL</code> elements.  There is currently no way to create such typed array inside
-PLV8 functions, only arguments can be typed array. You can modify the element and
+any <code>NULL</code> elements are allowed.  There is currently no way to create such typed array inside
+PLV8 functions; only arguments can be typed array. You can modify the element and
 return the value. An example for these types are as follows:</p>
 <pre><code>CREATE FUNCTION int4sum(ary plv8_int4array) RETURNS int8 AS $
   var sum = 0;
@@ -673,9 +673,9 @@ CREATE FUNCTION caller(a int, t int) RETURNS int AS $
   var func = plv8.find_function(&quot;callee&quot;);
   return func(a);
 $ LANGUAGE plv8;
-</code></pre><p>With <code>plv8.find_function()`</code>, you can look up other PLV8 functions. If they
-are not a PLV8 function, and error is thrown. The function signature parameter
-to <code>plv8.find_function()`</code> is either of <code>regproc</code> (function name only) or
+</code></pre><p>With <code>plv8.find_function()</code>, you can look up other PLV8 functions. If they
+are not a PLV8 function, an error is thrown. The function signature parameter
+to <code>plv8.find_function()</code> is either of <code>regproc</code> (function name only) or
 <code>regprocedure</code> (function name with argument types). You can make use of the
 internal type for arguments and void type for return type for the pure Javascript
 function to make sure any invocation from SQL statements should not occur.</p>
@@ -812,7 +812,7 @@ a subtransaction block.</p>
 } catch(e) {
   ... execute fall back plan ...
 }
-</code></pre><p>If one of the SQL execution in the subtransaction block fails, all of operations
+</code></pre><p>If one of the SQL executions in the subtransaction block fails, all of operations
 within the block are rolled back. If the process in the block throws a Javascript
 exception, it is carried forward. So use a <code>try ... catch</code> block to capture it and
 do alternative operations if it occurs.</p>
@@ -895,7 +895,7 @@ variable of the function.</p>
       <code>WindowObject.get_partition_local</code>
     </h3><p><code>WindowObject.get_partition_local([ size ])</code></p>
 <p>Returns partition-local value, which is released at the end of the current
-partition. If nothing is stored, undefined is returned. size argument (default
+partition. If nothing is stored, undefined is returned. <code>size</code> argument (default
 1000) is the byte size of the allocated memory in the first call. Once the memory
 is allocated, the size will not change.</p>
 
@@ -906,7 +906,7 @@ is allocated, the size will not change.</p>
       <code>WindowObject.set_partition_local</code>
     </h3><p><code>WindowObject.set_partition_local(obj)</code></p>
 <p>Stores the partition-local value, which you can retrieve later with
-<code>get_partition_local()`</code>. This function internally uses <code>JSON.stringify()</code> to\
+<code>get_partition_local()</code>. This function internally uses <code>JSON.stringify()</code> to
 serialize the object, so if you pass a value that is not able to be serialized
 it may end up being an unexpected value. If the size of a serialized value is
 more than the allocated memory, it will throw an exception.</p>
