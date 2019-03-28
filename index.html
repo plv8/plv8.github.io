@@ -41,13 +41,14 @@
 <li><a href="#configuring" class="anchor">Configuring</li>
 <li><a href="#compiling" class="anchor">Compiling</li>
 <li><a href="#installing" class="anchor">Installing</li>
-<li><a href="#todo" class="anchor">TODO</li>
+</ul>
+<li><a href="#build-faq" class="anchor">Build FAQ</li>
+<li><a href="#pg_config-build-error-mb-py-returns-non-zero-exit-status" class="anchor">pg_config build error / mb.py returns non-zero exit status</li>
 </ul>
 <li><a href="#runtime-configuration" class="anchor">Runtime Configuration</li>
-</ul>
 <li><a href="#function-calls" class="anchor">Function Calls</li>
 <ul>
-<li><a href="#scale-function-calls" class="anchor">Scale Function Calls</li>
+<li><a href="#scalar-function-calls" class="anchor">Scalar Function Calls</li>
 <li><a href="#set-returning-function-calls" class="anchor">Set-returning Function Calls</li>
 <li><a href="#trigger-function-calls" class="anchor">Trigger Function Calls</li>
 <li><a href="#inline-statement-calls" class="anchor">Inline Statement Calls</li>
@@ -99,7 +100,7 @@
     </h1><p>PLV8 is a <em>trusted</em> Javascript language extension for PostgreSQL.  It can be
 used for <em>stored procedures</em>, <em>triggers</em>, etc.</p>
 <p>PLV8 works with most versions of Postgres, but works best with <code>9.1</code> and above,
-including <code>10.0</code> and <code>10.1</code>.</p>
+including <code>10.0</code> and <code>11</code>.</p>
 
     <h2>
       <a name="installing-plv8" class="anchor" href="#installing-plv8">
@@ -128,7 +129,7 @@ execute a stored procedure:</p>
       Updating PLV8
     </h2><p>As of PLV8 version <code>2.3.3</code>, you can use upgrade scripts to upgrade your
 installation from any verion higher than <code>1.5.0</code>:</p>
-<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `2.3.3`;
+<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `2.3.8`;
 </code></pre><p>Note that until the database has been restarted, the old version of PLV8 will
 still be loaded, though <code>SELECT plv8_version()</code> will return the new version.
 This is an artifact of how Postgres manages extensions.</p>
@@ -215,7 +216,8 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
 <li>Git</li>
 <li>g++ or clang++</li>
 <li>Python 2 (for v8)</li>
-<li>pgk-config (linux only for v8)</li>
+<li>pkg-config (linux only for v8)</li>
+<li>libc++-dev (linux only)</li>
 </ul>
 
     <h3>
@@ -224,9 +226,9 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
       </a>
       Downloading Source
     </h3><p>Downloading the source code is very straightforward:</p>
-<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.3.tar.gz
-$ tar -xvzf v2.3.3.tar.gz
-$ cd plv8-2.3.3
+<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.8.tar.gz
+$ tar -xvzf v2.3.8.tar.gz
+$ cd plv8-2.3.8
 $ make
 </code></pre>
     <h3>
@@ -236,11 +238,8 @@ $ make
       Building
     </h3><p>Building is simple:</p>
 <pre><code>$ make
-</code></pre><p>This will download <code>v8</code> and compile it as well.  If you have a shared modern
-version of <code>v8</code> available (6.4.388.40 or above), you can compile it against a
-shared module:</p>
-<pre><code>$ make -f Makefile.shared
-</code></pre><p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, Plv8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build Plv8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, <code>make -f Makefile.shared</code>, and <code>make install</code>. For example in Ubuntu:</p>
+</code></pre><p>This will download <code>v8</code> and compile it as well.</p>
+<p>| Note: If you have multiple versions of PostgreSQL installed like 9.5 and 9.6, Plv8 will only be built for PostgreSQL 9.6. This is because make calls pg_config to get the version number, which will always be the latest version installed. If you need to build Plv8 for PostgreSQL 9.5 while you have 9.6 installed pass make the PG_CONFIG variable to your 9.5 version of pg_config. This works for <code>make</code>, and <code>make install</code>. For example in Ubuntu:</p>
 <pre><code>$ make PG_CONFIG=/usr/lib/postgresql/9.5/bin/pg_config
 </code></pre>
     <h3>
@@ -372,17 +371,34 @@ following:</p>
 on the version of PLV8 and the version of Postgres.  An example is
 <code>plv8-2.3.1-postgresql-10-x64.zip</code>.</p>
 
-    <h3>
-      <a name="todo" class="anchor" href="#todo">
+    <h1>
+      <a name="build-faq" class="anchor" href="#build-faq">
         <span class="header-link"></span>
       </a>
-      TODO
-    </h3><ul>
-<li>Generate configuration files</li>
-<li>Generate control files</li>
-<li>Generate sql files</li>
-</ul>
-
+      Build FAQ
+    </h1>
+    <h2>
+      <a name="pg_config-build-error-mb-py-returns-non-zero-exit-status" class="anchor" href="#pg_config-build-error-mb-py-returns-non-zero-exit-status">
+        <span class="header-link"></span>
+      </a>
+      pg_config build error / mb.py returns non-zero exit status
+    </h2><p>If you get this error, you need to install pkg-config (e.g. on Ubuntu, apt-get install pkg-config)</p>
+<pre><code>Traceback (most recent call last):
+  File &quot;tools/dev/v8gen.py&quot;, line 304, in &lt;module&gt;
+    sys.exit(gen.main())
+  File &quot;tools/dev/v8gen.py&quot;, line 298, in main
+    return self._options.func()
+  File &quot;tools/dev/v8gen.py&quot;, line 166, in cmd_gen
+    gn_outdir,
+  File &quot;tools/dev/v8gen.py&quot;, line 208, in _call_cmd
+    stderr=subprocess.STDOUT,
+  File &quot;/usr/lib/python2.7/subprocess.py&quot;, line 223, in check_output
+    raise CalledProcessError(retcode, cmd, output=output)
+subprocess.CalledProcessError: Command &#39;[&#39;/usr/bin/python&#39;, &#39;-u&#39;, &#39;tools/mb/mb.py&#39;, &#39;gen&#39;, &#39;-f&#39;, &#39;infra/mb/mb_config.pyl&#39;, &#39;-m&#39;, &#39;developer_default&#39;, &#39;-b&#39;, &#39;x64.release&#39;, &#39;out.gn/x64.release&#39;]&#39; returned non-zero exit status 1
+Makefile:35: recipe for target &#39;build/v8&#39; failed
+make: *** [build/v8] Error 1
+ERROR: command returned 2: make PG_CONFIG=/usr/bin/pg_config all
+</code></pre>
     <h1>
       <a name="runtime-configuration" class="anchor" href="#runtime-configuration">
         <span class="header-link"></span>
@@ -431,10 +447,10 @@ or at runtime using <code>SET</code>.</p>
 PostgreSQL.</p>
 
     <h2>
-      <a name="scale-function-calls" class="anchor" href="#scale-function-calls">
+      <a name="scalar-function-calls" class="anchor" href="#scalar-function-calls">
         <span class="header-link"></span>
       </a>
-      Scale Function Calls
+      Scalar Function Calls
     </h2><p>In PLV8, you can write your invoked function call in Javascript, using the usual
 <code>CREATE FUNCTION</code> statement.  Here is an example of a <code>scalar</code> function call:</p>
 <pre><code>CREATE FUNCTION plv8_test(keys TEXT[], vals TEXT[]) RETURNS JSON AS $
