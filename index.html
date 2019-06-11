@@ -129,7 +129,7 @@ execute a stored procedure:</p>
       Updating PLV8
     </h2><p>As of PLV8 version <code>2.3.3</code>, you can use upgrade scripts to upgrade your
 installation from any verion higher than <code>1.5.0</code>:</p>
-<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `2.3.8`;
+<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `2.3.11`;
 </code></pre><p>Note that until the database has been restarted, the old version of PLV8 will
 still be loaded, though <code>SELECT plv8_version()</code> will return the new version.
 This is an artifact of how Postgres manages extensions.</p>
@@ -226,9 +226,9 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
       </a>
       Downloading Source
     </h3><p>Downloading the source code is very straightforward:</p>
-<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.8.tar.gz
-$ tar -xvzf v2.3.8.tar.gz
-$ cd plv8-2.3.8
+<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.11.tar.gz
+$ tar -xvzf v2.3.11.tar.gz
+$ cd plv8-2.3.11
 $ make
 </code></pre>
     <h3>
