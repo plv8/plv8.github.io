@@ -60,7 +60,7 @@
 <li><a href="#utility-functions" class="anchor">Utility Functions</li>
 <ul>
 <li><a href="#-code-plv8-elog-code-" class="anchor"><code>plv8.elog</code></li>
-<li><a href="#-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_indent-code-" class="anchor"><code>plv8.quote_literal</code>, <code>plv8.nullable</code>, <code>plv8.quote_indent</code></li>
+<li><a href="#-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_ident-code-" class="anchor"><code>plv8.quote_literal</code>, <code>plv8.nullable</code>, <code>plv8.quote_ident</code></li>
 <li><a href="#-code-plv8-find_function-code-" class="anchor"><code>plv8.find_function</code></li>
 <li><a href="#-code-plv8-version-code-" class="anchor"><code>plv8.version</code></li>
 </ul>
@@ -120,7 +120,7 @@ be installed into your PostgreSQL database by running:</p>
 execute a stored procedure:</p>
 <pre><code>=# SELECT plv8_version();
 </code></pre><p>Alternately, you can run the following on all versions of PLV8:</p>
-<pre><code>=# DO $ plv8.elog(NOTICE, plv8.version); $ LANGUAGE plv8;
+<pre><code>=# DO $$ plv8.elog(NOTICE, plv8.version); $$ LANGUAGE plv8;
 </code></pre>
     <h2>
       <a name="updating-plv8" class="anchor" href="#updating-plv8">
@@ -220,6 +220,8 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
 <li>libc++-dev (linux only)</li>
 <li>libc++abi-dev (linux only)</li>
 </ul>
+<p>Note that some distributions of Linux may have additional requirements.  This
+is not meant to be an exhaustive list.</p>
 
     <h3>
       <a name="downloading-source" class="anchor" href="#downloading-source">
@@ -227,9 +229,9 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
       </a>
       Downloading Source
     </h3><p>Downloading the source code is very straightforward:</p>
-<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.8.tar.gz
-$ tar -xvzf v2.3.8.tar.gz
-$ cd plv8-2.3.8
+<pre><code>$ wget https://github.com/plv8/plv8/archive/v2.3.15.tar.gz
+$ tar -xvzf v2.3.15.tar.gz
+$ cd plv8-2.3.15
 $ make
 </code></pre>
     <h3>
@@ -454,13 +456,13 @@ PostgreSQL.</p>
       Scalar Function Calls
     </h2><p>In PLV8, you can write your invoked function call in Javascript, using the usual
 <code>CREATE FUNCTION</code> statement.  Here is an example of a <code>scalar</code> function call:</p>
-<pre><code>CREATE FUNCTION plv8_test(keys TEXT[], vals TEXT[]) RETURNS JSON AS $
+<pre><code>CREATE FUNCTION plv8_test(keys TEXT[], vals TEXT[]) RETURNS JSON AS $$
     var o = {};
     for(var i=0; i&lt;keys.length; i++){
         o[keys[i]] = vals[i];
     }
     return o;
-$ LANGUAGE plv8 IMMUTABLE STRICT;
+$$ LANGUAGE plv8 IMMUTABLE STRICT;
 
 =# SELECT plv8_test(ARRAY[&#39;name&#39;, &#39;age&#39;], ARRAY[&#39;Tom&#39;, &#39;29&#39;]);
 
@@ -489,7 +491,7 @@ of the function, they will be available in the function as <code>$1</code>, <cod
     </h2><p>PLV8 supports returning <code>SET</code> from function calls:</p>
 <pre><code>CREATE TYPE rec AS (i integer, t text);
 CREATE FUNCTION set_of_records() RETURNS SETOF rec AS
-$
+$$
     // plv8.return_next() stores records in an internal tuplestore,
     // and return all of them at the end of function.
     plv8.return_next( { &quot;i&quot;: 1, &quot;t&quot;: &quot;a&quot; } );
@@ -497,7 +499,7 @@ $
 
     // You can also return records with an array of JSON.
     return [ { &quot;i&quot;: 3, &quot;t&quot;: &quot;c&quot; }, { &quot;i&quot;: 4, &quot;t&quot;: &quot;d&quot; } ];
-$
+$$
 LANGUAGE plv8;
 </code></pre><p>Running this gives you a <code>SETOF</code> result:</p>
 <pre><code>=# SELECT * FROM set_of_records();
@@ -523,7 +525,7 @@ defined by the argument, <code>return_next()</code> raises an error.</p>
       Trigger Function Calls
     </h2><p>PLV8 supports trigger function calls:</p>
 <pre><code>CREATE FUNCTION test_trigger() RETURNS TRIGGER AS
-$
+$$
     plv8.elog(NOTICE, &quot;NEW = &quot;, JSON.stringify(NEW));
     plv8.elog(NOTICE, &quot;OLD = &quot;, JSON.stringify(OLD));
     plv8.elog(NOTICE, &quot;TG_OP = &quot;, TG_OP);
@@ -532,7 +534,7 @@ $
         NEW.i = 102;
         return NEW;
     }
-$
+$$
 LANGUAGE &quot;plv8&quot;;
 
 CREATE TRIGGER test_trigger
@@ -563,7 +565,7 @@ trigger state:</p>
       </a>
       Inline Statement Calls
     </h2><p>PLV8 supports the <code>DO</code> block when using PostgreSQL 9.0 and above:</p>
-<pre><code>DO $ plv8.elog(NOTICE, &#39;this&#39;, &#39;is&#39;, &#39;inline&#39;, &#39;code&#39;); $ LANGUAGE plv8;
+<pre><code>DO $$ plv8.elog(NOTICE, &#39;this&#39;, &#39;is&#39;, &#39;inline&#39;, &#39;code&#39;); $$ LANGUAGE plv8;
 </code></pre>
     <h2>
       <a name="auto-mapping-between-javascript-and-postgresql-built-in-types" class="anchor" href="#auto-mapping-between-javascript-and-postgresql-built-in-types">
@@ -617,13 +619,13 @@ of the regular one. For these typed arrays, only 1-dimensional arrays without
 any <code>NULL</code> elements.  There is currently no way to create such typed array inside
 PLV8 functions, only arguments can be typed array. You can modify the element and
 return the value. An example for these types are as follows:</p>
-<pre><code>CREATE FUNCTION int4sum(ary plv8_int4array) RETURNS int8 AS $
+<pre><code>CREATE FUNCTION int4sum(ary plv8_int4array) RETURNS int8 AS $$
   var sum = 0;
   for (var i = 0; i &lt; ary.length; i++) {
     sum += ary[i];
   }
   return sum;
-$ LANGUAGE plv8 IMMUTABLE STRICT;
+$$ LANGUAGE plv8 IMMUTABLE STRICT;
 
 SELECT int4sum(ARRAY[1, 2, 3, 4, 5]);
 
@@ -671,10 +673,10 @@ plv8.elog(DEBUG1, &#39;Hello&#39;, `${msg}!`);
 </code></pre><p>See the <a href="https://www.postgresql.org/docs/current/static/runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS">PostgreSQL manual</a> for information on each error level.</p>
 
     <h3>
-      <a name="-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_indent-code-" class="anchor" href="#-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_indent-code-">
+      <a name="-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_ident-code-" class="anchor" href="#-code-plv8-quote_literal-code-code-plv8-nullable-code-code-plv8-quote_ident-code-">
         <span class="header-link"></span>
       </a>
-      <code>plv8.quote_literal</code>, <code>plv8.nullable</code>, <code>plv8.quote_indent</code>
+      <code>plv8.quote_literal</code>, <code>plv8.nullable</code>, <code>plv8.quote_ident</code>
     </h3><p>Each function for the quote family is identical to the built-in SQL function
 with the same name.</p>
 
@@ -685,11 +687,11 @@ with the same name.</p>
       <code>plv8.find_function</code>
     </h3><p>PLV8 provides a function to access other functions defined as <code>plv8</code> functions
 that have been registered in the database.</p>
-<pre><code>CREATE FUNCTION callee(a int) RETURNS int AS $ return a * a $ LANGUAGE plv8;
-CREATE FUNCTION caller(a int, t int) RETURNS int AS $
+<pre><code>CREATE FUNCTION callee(a int) RETURNS int AS $$ return a * a $$ LANGUAGE plv8;
+CREATE FUNCTION caller(a int, t int) RETURNS int AS $$
   var func = plv8.find_function(&quot;callee&quot;);
   return func(a);
-$ LANGUAGE plv8;
+$$ LANGUAGE plv8;
 </code></pre><p>With <code>plv8.find_function()`</code>, you can look up other PLV8 functions. If they
 are not a PLV8 function, and error is thrown. The function signature parameter
 to <code>plv8.find_function()`</code> is either of <code>regproc</code> (function name only) or
