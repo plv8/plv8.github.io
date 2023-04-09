@@ -315,7 +315,7 @@ RESET ROLE;
 <li>libtinfo5 (ubuntu 20.04)</li>
 <li>ninja-build (ubuntu arm64)</li>
 </ul>
-<p>Note that some distributions of Linux may have additional requirements.  This
+<p>Note that some distributions of Linux may have additional requirements. This
 is not meant to be an exhaustive list.</p>
 
       <h3>
@@ -410,7 +410,8 @@ it:</p>
         </a>
         Building for Windows
       </h2>
-    <p>Building PLV8 for Windows has some specific requirements:</p>
+    <p>It is currently unknown whether Plv8 will build correctly with Windows. If you are willing to try, these were the last-known build instructions:</p>
+<p>Building PLV8 for Windows has some specific requirements:</p>
 <ul>
 <li>Git</li>
 <li>MSVC 2013, 2015, or 2017</li>
@@ -432,9 +433,9 @@ it:</p>
       </h3>
     <p>Currently, Postgres requires a patch of one or more <code>include</code> files in order to
 compile PLV8.</p>
-<p>First, find the directory that contains the <code>include</code> files.  This will typically
+<p>First, find the directory that contains the <code>include</code> files. This will typically
 be inside something like <code>C:\Program Files\PostgreSQL\10\include</code>, where the <code>10</code>
-is your version number.  Inside of the <code>include</code> directory:</p>
+is your version number. Inside of the <code>include</code> directory:</p>
 <pre><code>PS&gt; cd server\port\atomics
 PS&gt; copy \plv8\windows\generic-msvc.h.patch .
 PS&gt; patch &lt; generic-msvc.h.patch
@@ -446,7 +447,7 @@ PS&gt; patch &lt; generic-msvc.h.patch
         </a>
         Bootstrapping
       </h3>
-    <p>Bootstrapping will the build environment, download, and compile <code>v8</code>.  Watch for
+    <p>Bootstrapping will the build environment, download, and compile <code>v8</code>. Watch for
 any errors:</p>
 <pre><code>PS&gt; bootstrap.bat
 </code></pre>
@@ -457,9 +458,9 @@ any errors:</p>
         </a>
         Configuring
       </h3>
-    <p>Once <code>v8</code> has been built, you can configure your build environment.  This involves
+    <p>Once <code>v8</code> has been built, you can configure your build environment. This involves
 specifying the path to your Postgres install, the version of Postgres you are
-running, as well as the build target.  Build targets will typically be one of the
+running, as well as the build target. Build targets will typically be one of the
 following:</p>
 <ul>
 <li><code>Visual Studio 15 2017</code> - 32 bit, MSVC 2017</li>
@@ -489,8 +490,8 @@ following:</p>
         </a>
         Installing
       </h3>
-    <p>To install, you simply need to <code>unzip</code> the file created.  The name will depend
-on the version of PLV8 and the version of Postgres.  An example is
+    <p>To install, you simply need to <code>unzip</code> the file created. The name will depend
+on the version of PLV8 and the version of Postgres. An example is
 <code>plv8-3.0.0-postgresql-10-x64.zip</code>.</p>
 
       <h1>
