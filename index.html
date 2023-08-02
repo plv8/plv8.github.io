@@ -30,6 +30,8 @@
 <li><a href="#building" class="anchor">Building</li>
 <li><a href="#building-for-macos-linux" class="anchor">Building for MacOS/Linux</li>
 <ul>
+<li><a href="#linux" class="anchor">Linux</li>
+<li><a href="#macos" class="anchor">MacOS</li>
 <li><a href="#downloading-source" class="anchor">Downloading Source</li>
 <li><a href="#building" class="anchor">Building</li>
 <li><a href="#building-with-execution-timeout" class="anchor">Building with Execution Timeout</li>
@@ -37,18 +39,8 @@
 <li><a href="#installing" class="anchor">Installing</li>
 <li><a href="#testing" class="anchor">Testing</li>
 </ul>
-<li><a href="#building-for-windows" class="anchor">Building for Windows</li>
-<ul>
-<li><a href="#patching-postgres" class="anchor">Patching Postgres</li>
-<li><a href="#bootstrapping" class="anchor">Bootstrapping</li>
-<li><a href="#configuring" class="anchor">Configuring</li>
-<li><a href="#compiling" class="anchor">Compiling</li>
-<li><a href="#installing" class="anchor">Installing</li>
-</ul>
-<li><a href="#build-faq" class="anchor">Build FAQ</li>
-<li><a href="#pg_config-build-error-mb-py-returns-non-zero-exit-status" class="anchor">pg_config build error / mb.py returns non-zero exit status</li>
-</ul>
 <li><a href="#runtime-configuration" class="anchor">Runtime Configuration</li>
+</ul>
 <li><a href="#function-calls" class="anchor">Function Calls</li>
 <ul>
 <li><a href="#scalar-function-calls" class="anchor">Scalar Function Calls</li>
@@ -107,10 +99,10 @@
         </a>
         PLV8
       </h1>
-    <p>PLV8 is a <em>trusted</em> Javascript language extension for PostgreSQL.  It can be
+    <p>PLV8 is a <em>trusted</em> Javascript language extension for PostgreSQL. It can be
 used for <em>stored procedures</em>, <em>triggers</em>, etc.</p>
-<p>PLV8 works with most versions of Postgres, but works best with <code>9.1</code> and above,
-including <code>10.0</code>, <code>11</code>, <code>12</code>, and <code>13</code>.</p>
+<p>PLV8 works with most versions of Postgres, but works best with <code>13</code> and above,
+including <code>14</code>, <code>16</code>, and <code>16</code>.</p>
 
       <h2>
         <a name="installing-plv8" class="anchor" href="#installing-plv8">
@@ -129,7 +121,7 @@ be installed into your PostgreSQL database by running:</p>
         </a>
         Verifying Your Installation
       </h3>
-    <p>You can verify the installation in two ways.  As of PLV8 <code>2.0.0</code>, you can
+    <p>You can verify the installation in two ways. As of PLV8 <code>2.0.0</code>, you can
 execute a stored procedure:</p>
 <pre><code>=# SELECT plv8_version();
 </code></pre>
@@ -145,7 +137,7 @@ execute a stored procedure:</p>
       </h2>
     <p>As of PLV8 version <code>2.3.3</code>, you can use upgrade scripts to upgrade your
 installation from any version higher than <code>1.5.0</code>:</p>
-<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `3.0.0`;
+<pre><code>=# ALTER EXTENSION plv8 UPDATE TO `3.2.0`;
 </code></pre>
 <p>Note that until the database has been restarted, the old version of PLV8 will
 still be loaded, though <code>SELECT plv8_version()</code> will return the new version.
@@ -195,11 +187,11 @@ for the security reasons, if the user switches to another with SET ROLE command,
 a new JS runtime context is initialized and used separately. This prevents the
 risk of unexpected information leaking.</p>
 <p>Each <code>plv8</code> function is invoked as if the function is the property of other
-object. This means this in each function is a Javascript <code>object</code> that is created
+object. This means <code>this</code> in each function is a Javascript <code>object</code> that is created
 every time the function is executed in a query. In other words, the life time and
-the visibility of this object in a function is only a series of function calls in
+the visibility of the <code>this</code> object in a function is only a series of function calls in
 a query. If you need to share some value among different functions, keep it in the
-global <code>plv8</code> object because each function invocation has a different this object.</p>
+global <code>plv8</code> object because each function invocation has a different <code>this</code> object.</p>
 
       <h2>
         <a name="start-up-procedure" class="anchor" href="#start-up-procedure">
@@ -208,7 +200,7 @@ global <code>plv8</code> object because each function invocation has a different
         Start-up Procedure
       </h2>
     <p>PLV8 provides a start up facility, which allows you to call a <code>plv8</code> runtime
-environment initialization function specified in the GUC variable.  This can
+environment initialization function specified in the GUC variable. This can
 only be set by someone with administrator access to the database you are
 accessing.</p>
 <pre><code>SET plv8.start_proc = &#39;plv8_init&#39;;
@@ -239,7 +231,7 @@ sure to <code>SET</code> this GUC before any <code>plv8</code> actions including
         </a>
         plv8_info
       </h3>
-    <p>Get information about all the current running environments 
+    <p>Get information about all the current running environments
 on a specific connection from all users.</p>
 <p>Can be run by superuser only.</p>
 <pre><code class="language-sql">SELECT plv8_info();
@@ -247,24 +239,24 @@ on a specific connection from all users.</p>
 <p>Outputs JSON</p>
 <pre><code class="language-json">[
   {
-    &quot;user&quot;:&quot;user1&quot;,
-    &quot;total_heap_size&quot;:1327104,
-    &quot;total_physical_size&quot;:474336,
-    &quot;used_heap_size&quot;:386680,
-    &quot;heap_size_limit&quot;:270008320,
-    &quot;external_memory&quot;:0,
-    &quot;number_of_native_contexts&quot;:2,
-    &quot;contexts&quot;:[]
+    &quot;user&quot;: &quot;user1&quot;,
+    &quot;total_heap_size&quot;: 1327104,
+    &quot;total_physical_size&quot;: 474336,
+    &quot;used_heap_size&quot;: 386680,
+    &quot;heap_size_limit&quot;: 270008320,
+    &quot;external_memory&quot;: 0,
+    &quot;number_of_native_contexts&quot;: 2,
+    &quot;contexts&quot;: []
   },
   {
-    &quot;user&quot;:&quot;user2&quot;,
-    &quot;total_heap_size&quot;:1327104,
-    &quot;total_physical_size&quot;:474336,
-    &quot;used_heap_size&quot;:386680,
-    &quot;heap_size_limit&quot;:270008320,
-    &quot;external_memory&quot;:0,
-    &quot;number_of_native_contexts&quot;:3,
-    &quot;contexts&quot;:[&quot;my context&quot;]
+    &quot;user&quot;: &quot;user2&quot;,
+    &quot;total_heap_size&quot;: 1327104,
+    &quot;total_physical_size&quot;: 474336,
+    &quot;used_heap_size&quot;: 386680,
+    &quot;heap_size_limit&quot;: 270008320,
+    &quot;external_memory&quot;: 0,
+    &quot;number_of_native_contexts&quot;: 3,
+    &quot;contexts&quot;: [&quot;my context&quot;]
   }
 ]
 </code></pre>
@@ -304,19 +296,42 @@ RESET ROLE;
         Building for MacOS/Linux
       </h2>
     <p>Building PLV8 for MacOS or Linux has some specific requirements:</p>
+
+      <h3>
+        <a name="linux" class="anchor" href="#linux">
+          <span class="header-link"></span>
+        </a>
+        Linux
+      </h3>
+    <p>The following packages must be installed to build on Ubuntu or Debian:</p>
 <ul>
-<li>Git</li>
-<li>g++ or clang++</li>
-<li>Python 2 (for v8)</li>
-<li>pkg-config (linux only for v8)</li>
-<li>libc++-dev (linux only)</li>
-<li>libc++abi-dev (linux only)</li>
-<li>libglib2.0-dev (ubuntu 20.04)</li>
-<li>libtinfo5 (ubuntu 20.04)</li>
-<li>ninja-build (ubuntu arm64)</li>
+<li><code>libtinfo5</code></li>
+<li><code>build-essential</code></li>
+<li><code>pkg-config</code></li>
+<li><code>libstdc++-12-dev</code> (depending on version, may be 10 instead of 12)</li>
+<li><code>cmake</code></li>
+<li><code>git</code></li>
+</ul>
+<p>The following packages must be installed to build on EL9 or EL8:</p>
+<ul>
+<li>&#39;development tools&#39; - via groupinstall</li>
+<li><code>cmake</code></li>
+<li><code>git</code></li>
 </ul>
 <p>Note that some distributions of Linux may have additional requirements. This
 is not meant to be an exhaustive list.</p>
+
+      <h3>
+        <a name="macos" class="anchor" href="#macos">
+          <span class="header-link"></span>
+        </a>
+        MacOS
+      </h3>
+    <p>The following packages must be install to build on MacOS:</p>
+<ul>
+<li><code>XCode</code> - and the command line tools</li>
+<li><code>cmake</code></li>
+</ul>
 
       <h3>
         <a name="downloading-source" class="anchor" href="#downloading-source">
@@ -402,127 +417,6 @@ it:</p>
       </h3>
     <p>Once PLV8 is installed, you can verify the install by running:</p>
 <pre><code>$ make installcheck
-</code></pre>
-
-      <h2>
-        <a name="building-for-windows" class="anchor" href="#building-for-windows">
-          <span class="header-link"></span>
-        </a>
-        Building for Windows
-      </h2>
-    <p>It is currently unknown whether Plv8 will build correctly with Windows. If you are willing to try, these were the last-known build instructions:</p>
-<p>Building PLV8 for Windows has some specific requirements:</p>
-<ul>
-<li>Git</li>
-<li>MSVC 2013, 2015, or 2017</li>
-<li>CMake - available as part of MSVC</li>
-<li>Postgres 9.5+ (it will work in 9.3 and 9.4, but will involve extra work)</li>
-</ul>
-<p>Additional requirements to build V8:</p>
-<ul>
-<li>Python 2</li>
-<li>unzip.exe</li>
-<li>patch.exe - part of the Git install</li>
-</ul>
-
-      <h3>
-        <a name="patching-postgres" class="anchor" href="#patching-postgres">
-          <span class="header-link"></span>
-        </a>
-        Patching Postgres
-      </h3>
-    <p>Currently, Postgres requires a patch of one or more <code>include</code> files in order to
-compile PLV8.</p>
-<p>First, find the directory that contains the <code>include</code> files. This will typically
-be inside something like <code>C:\Program Files\PostgreSQL\10\include</code>, where the <code>10</code>
-is your version number. Inside of the <code>include</code> directory:</p>
-<pre><code>PS&gt; cd server\port\atomics
-PS&gt; copy \plv8\windows\generic-msvc.h.patch .
-PS&gt; patch &lt; generic-msvc.h.patch
-</code></pre>
-
-      <h3>
-        <a name="bootstrapping" class="anchor" href="#bootstrapping">
-          <span class="header-link"></span>
-        </a>
-        Bootstrapping
-      </h3>
-    <p>Bootstrapping will the build environment, download, and compile <code>v8</code>. Watch for
-any errors:</p>
-<pre><code>PS&gt; bootstrap.bat
-</code></pre>
-
-      <h3>
-        <a name="configuring" class="anchor" href="#configuring">
-          <span class="header-link"></span>
-        </a>
-        Configuring
-      </h3>
-    <p>Once <code>v8</code> has been built, you can configure your build environment. This involves
-specifying the path to your Postgres install, the version of Postgres you are
-running, as well as the build target. Build targets will typically be one of the
-following:</p>
-<ul>
-<li><code>Visual Studio 15 2017</code> - 32 bit, MSVC 2017</li>
-<li><code>Visual Studio 15 2017 Win64</code> - 64 bit, MSVC 2017</li>
-<li><code>Visual Studio 14 2015</code> - 32 bit, MSVC 2015</li>
-<li><code>Visual Studio 14 2015 Win64</code> - 64 bit, MSVC 2015</li>
-<li><code>Visual Studio 12 2013</code> - 32 bit, MSVC 2013</li>
-<li><code>Visual Studio 12 2013 Win64</code> - 64 bit, MSVC 2013</li>
-</ul>
-<pre><code>PS&gt; cmake . -G &quot;Visual Studio 15 2017 Win64&quot; -DCMAKE_INSTALL_PREFIX=&quot;C:\Program Files\PostgreSQL\10&quot; -DPOSTGRESQL_VERSION=10
-</code></pre>
-
-      <h3>
-        <a name="compiling" class="anchor" href="#compiling">
-          <span class="header-link"></span>
-        </a>
-        Compiling
-      </h3>
-    <p>After successfully configuring your build environment, compiling should be easy:</p>
-<pre><code>PS&gt; cmake --build . --config Release --target Package
-</code></pre>
-<p>This will build and package the extension for installation.</p>
-
-      <h3>
-        <a name="installing" class="anchor" href="#installing">
-          <span class="header-link"></span>
-        </a>
-        Installing
-      </h3>
-    <p>To install, you simply need to <code>unzip</code> the file created. The name will depend
-on the version of PLV8 and the version of Postgres. An example is
-<code>plv8-3.0.0-postgresql-10-x64.zip</code>.</p>
-
-      <h1>
-        <a name="build-faq" class="anchor" href="#build-faq">
-          <span class="header-link"></span>
-        </a>
-        Build FAQ
-      </h1>
-    
-      <h2>
-        <a name="pg_config-build-error-mb-py-returns-non-zero-exit-status" class="anchor" href="#pg_config-build-error-mb-py-returns-non-zero-exit-status">
-          <span class="header-link"></span>
-        </a>
-        pg_config build error / mb.py returns non-zero exit status
-      </h2>
-    <p>If you get this error, you need to install pkg-config (e.g. on Ubuntu, apt-get install pkg-config)</p>
-<pre><code>Traceback (most recent call last):
-  File &quot;tools/dev/v8gen.py&quot;, line 304, in &lt;module&gt;
-    sys.exit(gen.main())
-  File &quot;tools/dev/v8gen.py&quot;, line 298, in main
-    return self._options.func()
-  File &quot;tools/dev/v8gen.py&quot;, line 166, in cmd_gen
-    gn_outdir,
-  File &quot;tools/dev/v8gen.py&quot;, line 208, in _call_cmd
-    stderr=subprocess.STDOUT,
-  File &quot;/usr/lib/python2.7/subprocess.py&quot;, line 223, in check_output
-    raise CalledProcessError(retcode, cmd, output=output)
-subprocess.CalledProcessError: Command &#39;[&#39;/usr/bin/python&#39;, &#39;-u&#39;, &#39;tools/mb/mb.py&#39;, &#39;gen&#39;, &#39;-f&#39;, &#39;infra/mb/mb_config.pyl&#39;, &#39;-m&#39;, &#39;developer_default&#39;, &#39;-b&#39;, &#39;x64.release&#39;, &#39;out.gn/x64.release&#39;]&#39; returned non-zero exit status 1
-Makefile:35: recipe for target &#39;build/v8&#39; failed
-make: *** [build/v8] Error 1
-ERROR: command returned 2: make PG_CONFIG=/usr/bin/pg_config all
 </code></pre>
 
       <h1>
