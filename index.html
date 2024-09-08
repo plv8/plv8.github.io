@@ -35,7 +35,6 @@
 <li><a href="#downloading-source" class="anchor">Downloading Source</li>
 <li><a href="#building" class="anchor">Building</li>
 <li><a href="#building-with-execution-timeout" class="anchor">Building with Execution Timeout</li>
-<li><a href="#building-with-icu" class="anchor">Building with ICU</li>
 <li><a href="#installing" class="anchor">Installing</li>
 <li><a href="#testing" class="anchor">Testing</li>
 </ul>
@@ -101,8 +100,7 @@
       </h1>
     <p>PLV8 is a <em>trusted</em> Javascript language extension for PostgreSQL. It can be
 used for <em>stored procedures</em>, <em>triggers</em>, etc.</p>
-<p>PLV8 works with most versions of Postgres, but works best with <code>13</code> and above,
-including <code>14</code>, <code>16</code>, and <code>16</code>.</p>
+<p>PLV8 works with most versions of Postgres, version <code>13</code> and above.</p>
 
       <h2>
         <a name="installing-plv8" class="anchor" href="#installing-plv8">
@@ -340,9 +338,8 @@ is not meant to be an exhaustive list.</p>
         Downloading Source
       </h3>
     <p>Downloading the source code is very straightforward:</p>
-<pre><code>$ wget https://github.com/plv8/plv8/archive/v3.0.0.tar.gz
-$ tar -xvzf v3.0.0.tar.gz
-$ cd plv8-3.0.0
+<pre><code>$ git clone https://github.com/plv8/plv8
+$ cd plv8
 $ make
 </code></pre>
 
@@ -374,26 +371,6 @@ functions, when enabled at compile-time.</p>
 timeout of 300 seconds (5 minutes). You can override this by setting the
 <code>plv8.execution_timeout</code> variable. It can be set between <code>1</code> second and <code>65536</code>
 seconds, but cannot be disabled.</p>
-
-      <h3>
-        <a name="building-with-icu" class="anchor" href="#building-with-icu">
-          <span class="header-link"></span>
-        </a>
-        Building with ICU
-      </h3>
-    <p>Building with ICU requires you to enable ICU in your build process:</p>
-<pre><code>$ make USE_ICU=1
-</code></pre>
-<p>If you build with ICU, you will need to install the correct ICU file, located in
-<code>contrib/icu</code>.</p>
-<ul>
-<li>icudtl.dat - Little Endian architectures (Intel)</li>
-<li>icudtb.dat - Big Endian architectures (Sparc)</li>
-</ul>
-<p>For ARM, you will need to figure out which Endianess your hardware and OS is
-configured for.</p>
-<p>NOTE: it is important that the user that Postgres is started with has read
-access to the file.</p>
 
       <h3>
         <a name="installing" class="anchor" href="#installing">
@@ -754,7 +731,9 @@ CREATE FUNCTION caller(a int, t int) RETURNS int AS $$
   return func(a);
 $$ LANGUAGE plv8;
 </code></pre>
-<p>With <code>plv8.find_function()``, you can look up other PLV8 functions. If they are not a PLV8 function, and error is thrown. The function signature parameter to </code>plv8.find_function()`` is either of <code>regproc</code> (function name only) or
+<p>With <code>plv8.find_function()</code>, you can look up other PLV8 functions. If they
+are not a PLV8 function, and error is thrown. The function signature parameter
+to <code>plv8.find_function()</code> is either of <code>regproc</code> (function name only) or
 <code>regprocedure</code> (function name with argument types). You can make use of the
 internal type for arguments and void type for return type for the pure Javascript
 function to make sure any invocation from SQL statements should not occur.</p>
