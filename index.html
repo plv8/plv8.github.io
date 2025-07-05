@@ -48,6 +48,8 @@
 <li><a href="#inline-statement-calls" class="anchor">Inline Statement Calls</li>
 <li><a href="#auto-mapping-between-javascript-and-postgresql-built-in-types" class="anchor">Auto Mapping Between Javascript and PostgreSQL Built-in Types</li>
 <li><a href="#typed-array" class="anchor">Typed Array</li>
+<li><a href="#records" class="anchor">Records</li>
+<li><a href="#in-out-inout-handling" class="anchor">IN/OUT/INOUT Handling</li>
 </ul>
 <li><a href="#plv8-built-ins" class="anchor">PLV8 Built-ins</li>
 <ul>
@@ -433,29 +435,9 @@ or at runtime using <code>SET</code>.</p>
 <td>300 seconds</td>
 </tr>
 <tr>
-<td><code>plv8.boot_proc</code></td>
-<td>Like <code>start_proc</code> above, but can be set by superuser only</td>
-<td><em>none</em></td>
-</tr>
-<tr>
 <td><code>plv8.memory_limit</code></td>
 <td>Memory limit for the per-user heap usage on each connection, in <strong>MB</strong></td>
 <td>256</td>
-</tr>
-<tr>
-<td><code>plv8.context</code></td>
-<td>Users can switch to a different global object (<code>globalThis</code>) by using an arbitrary context string</td>
-<td><em>none</em></td>
-</tr>
-<tr>
-<td><code>plv8.context_cache_size</code></td>
-<td>Size of the per-user LRU cache for custom contexts</td>
-<td>8</td>
-</tr>
-<tr>
-<td><code>plv8.max_eval_size</code></td>
-<td>Control how <code>eval()</code> can be used, -1 = no limits, 0 = <code>eval()</code> disabled, any other number = max length of the eval-able string in <strong>bytes</strong></td>
-<td>2MB</td>
 </tr>
 </tbody></table>
 
@@ -475,7 +457,7 @@ PostgreSQL.</p>
         Scalar Function Calls
       </h2>
     <p>In PLV8, you can write your invoked function call in Javascript, using the usual
-<code>CREATE FUNCTION</code> statement.  Here is an example of a <code>scalar</code> function call:</p>
+<code>CREATE FUNCTION</code> statement. Here is an example of a <code>scalar</code> function call:</p>
 <pre><code>CREATE FUNCTION plv8_test(keys TEXT[], vals TEXT[]) RETURNS JSON AS $$
     var o = {};
     for(var i=0; i&lt;keys.length; i++){
@@ -502,7 +484,7 @@ plv8_test
 </code></pre>
 <p>Where <code>keys</code> and <code>vals</code> are type checked and validated inside of PostgreSQL,
 called as arguments to the function, and <code>o</code> is the object that is returned as
-the <code>JSON</code> type back to PostgreSQL.  If argument names are omitted in the creation
+the <code>JSON</code> type back to PostgreSQL. If argument names are omitted in the creation
 of the function, they will be available in the function as <code>$1</code>, <code>$2</code>, etc.</p>
 
       <h2>
@@ -537,8 +519,8 @@ i | t
 (4 rows)
 </code></pre>
 <p>Internally, if the function is declared as <code>RETURNS SETOF</code>, PLV8 prepares a
-<code>tuplestore</code> every time every time it is called.  You can call the
-<code>plv8.return_next()</code> function as many times as you need to return a row.  In
+<code>tuplestore</code> every time every time it is called. You can call the
+<code>plv8.return_next()</code> function as many times as you need to return a row. In
 addition, you can also return an <code>array</code> to add a set of records.</p>
 <p>If the argument object to <code>return_next()</code> has extra properties that are not
 defined by the argument, <code>return_next()</code> raises an error.</p>
@@ -569,7 +551,7 @@ CREATE TRIGGER test_trigger
     EXECUTE PROCEDURE test_trigger(&#39;foo&#39;, &#39;bar&#39;);
 </code></pre>
 <p>If the trigger type is an <code>INSERT</code> or <code>UPDATE</code>, you can assign properties of
-<code>NEW</code> variable to change the actual tuple stored by this operation.  A PLV8
+<code>NEW</code> variable to change the actual tuple stored by this operation. A PLV8
 trigger function will have the following special arguments that contain the
 trigger state:</p>
 <ul>
@@ -647,7 +629,7 @@ element by using PLV8 domain types.</p>
 </ul>
 <p>These are only annotations that tell PLV8 to use the fast access method instead
 of the regular one. For these typed arrays, only 1-dimensional arrays without
-any <code>NULL</code> elements.  There is currently no way to create such typed array inside
+any <code>NULL</code> elements. There is currently no way to create such typed array inside
 PLV8 functions, only arguments can be typed array. You can modify the element and
 return the value. An example for these types are as follows:</p>
 <pre><code>CREATE FUNCTION int4sum(ary plv8_int4array) RETURNS int8 AS $$
@@ -665,6 +647,97 @@ SELECT int4sum(ARRAY[1, 2, 3, 4, 5]);
       15
 (1 row)
 </code></pre>
+
+      <h2>
+        <a name="records" class="anchor" href="#records">
+          <span class="header-link"></span>
+        </a>
+        Records
+      </h2>
+    <p>A <code>RECORD</code> is fundamental in Postgres, and can be used as both input and
+output for functions.</p>
+<pre><code>CREATE TYPE record_type AS (i integer, t text);
+CREATE FUNCTION mutate_record(rec record_type) RETURNS record_type AS
+$$
+        return { i: i * 2, t: `t =&gt; ${t}` };
+$$
+LANGUAGE plv8;
+
+SELECT * FROM mutate_record(&#39;(17, skidoo)&#39;::record_type);
+ i  |      t
+----+--------------
+ 34 | t =&gt;  skidoo
+(1 row)
+</code></pre>
+<p>In addition, a function can simply return a <code>RECORD</code>.</p>
+<pre><code>CREATE FUNCTION return_record(i integer, t text) RETURNS record AS
+$$
+    return { &quot;i&quot;: i, &quot;t&quot;: t };
+$$
+LANGUAGE plv8;
+</code></pre>
+<p>But it is required that the expected response is returned as part of the
+query.</p>
+<pre><code>SELECT * FROM return_record(17, &#39;skidoo&#39;) AS ( i INT, t TEXT );
+ i  |   t
+----+--------
+ 17 | skidoo
+(1 row)
+</code></pre>
+
+      <h2>
+        <a name="in-out-inout-handling" class="anchor" href="#in-out-inout-handling">
+          <span class="header-link"></span>
+        </a>
+        IN/OUT/INOUT Handling
+      </h2>
+    <p>There are some specific function declarations that PLV8 handles differently
+than some other procedural languages.</p>
+<pre><code>CREATE FUNCTION inout_test(IN t1 TEXT, INOUT i1 INTEGER, OUT o1 TEXT) AS
+$$
+  return { i1: 23, o1: t1 + i1, foo: &#39;bar&#39; };
+$$
+LANGUAGE plv8;
+</code></pre>
+<p>When we execute this we call it with only parameters that are inputs to the
+function, in this case <code>t1</code> and <code>i1</code>. Note that only named parameters in
+the function definition get returned.</p>
+<pre><code>SELECT * FROM inout_test(&#39;hello&#39;, 5);
+ i1 |   o1
+----+--------
+ 23 | hello5
+(1 row)
+</code></pre>
+<p>When only one variable occurs in the function definition that as an output,
+then the return type must be a scalar value.</p>
+<pre><code>CREATE FUNCTION scalar_test(INOUT i1 INTEGER) AS
+$$
+  return i1 + 5;
+$$
+LANGUAGE plv8;
+
+SELECT * FROM scalar_test(23);
+i1
+----
+28
+(1 row)
+</code></pre>
+<p>Procedures work similarly to functions.</p>
+<pre><code>CREATE PROCEDURE procedure_inout_test(IN t1 TEXT, INOUT i1 INTEGER, OUT o1 TEXT) AS
+$$
+  return { i1: 23, o1: t1 + i1, foo: &#39;bar&#39; };
+$$
+LANGUAGE plv8;
+</code></pre>
+<p>The main difference is that <code>OUT</code> arguments <em>must</em> be explicitly used as
+part of the <code>CALL</code>.</p>
+<pre><code>CALL procedure_inout_test(&#39;hello&#39;, 5, &#39;foo&#39;);
+ i1 |   o1
+----+--------
+ 23 | hello5
+(1 row)
+</code></pre>
+<p>Again, extraneous output is ignored.</p>
 
       <h1>
         <a name="plv8-built-ins" class="anchor" href="#plv8-built-ins">
